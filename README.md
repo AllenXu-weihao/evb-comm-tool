@@ -2,15 +2,6 @@
 
 基于 PyQt6 的 EVB 通信芯片测试上位机，支持串口通信、批量 CSV 测试、符号 BER 分析和实时 SNR/质量监测。
 
-## GitHub 仓库
-
-本地仓库已初始化并完成首次提交（分支 `main`）。使用 **GitHub Desktop** 推送到你在 GitHub 上创建的空仓库即可。
-
-推送后，将下方地址替换为你的实际仓库 URL：
-
-```
-https://github.com/<你的用户名>/evb-comm-tool
-```
 
 ## 环境配置
 
@@ -146,20 +137,6 @@ run.bat
 
 若 `.venv` 尚未创建，先运行 `setup.bat`，再运行 `run.bat`。
 
-## 推送到 GitHub（GitHub Desktop）
-
-1. 打开 **GitHub Desktop**
-2. 菜单 **File（文件）→ Add local repository（添加本地仓库）**
-3. 路径选择：`C:\Users\15209\Desktop\evb-comm-tool`
-4. 若提示 *"This directory does not appear to be a Git repository"*，点击 **create a repository** 链接（通常不会出现，因已 init）
-5. 在 GitHub 网站确认空仓库 URL（如 `https://github.com/你的用户名/evb-comm-tool`）
-6. 回到 GitHub Desktop：
-   - 若显示 **Publish repository**：点击后选择同名仓库 `evb-comm-tool` 并 Push
-   - 若显示 **Push origin**：直接点击 **Push origin**
-   - 若需手动设置远程：**Repository → Repository settings → Remote**，粘贴 GitHub 仓库 URL
-7. 推送成功后，在 GitHub 网页刷新即可看到代码
-
-> **注意：** `.venv/` 已在 `.gitignore` 中排除，不会上传。克隆后需本地运行 `setup.bat` 安装依赖。
 
 ## 协议说明
 
