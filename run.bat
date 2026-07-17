@@ -1,13 +1,22 @@
+chcp 65001 >nul
 @echo off
 setlocal
 cd /d "%~dp0"
 
 set "VENV_PY=%~dp0.venv\Scripts\python.exe"
 set "MAIN=%~dp0main.py"
+set "NEED_SETUP=0"
 
 if not exist "%VENV_PY%" (
+    set "NEED_SETUP=1"
+) else (
+    "%VENV_PY%" --version >nul 2>&1
+    if errorlevel 1 set "NEED_SETUP=1"
+)
+
+if "%NEED_SETUP%"=="1" (
     echo.
-    echo [信息] 未找到虚拟环境 .venv，正在运行首次配置 setup.bat ...
+    echo [信息] 未找到可用虚拟环境 .venv，正在运行首次配置 setup.bat ...
     echo.
     call "%~dp0setup.bat" nopause
     if errorlevel 1 (

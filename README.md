@@ -1,7 +1,23 @@
 # EVB 通信质量监测上位机
 
-基于 PyQt6 的 EVB 通信芯片测试上位机，支持串口通信、批量 CSV 测试、符号 BER 分析和实时 SNR/质量监测。
+基于 PyQt6 的 EVB 通信芯片测试上位机，支持串口通信、批量 CSV Sim-to-Real 测试与 BER/迭代曲线分析。
 
+**EVB** = **E**valuation **B**oard（评估板）：本项目所测 Turbo 通信译码芯片的评估硬件平台；`evb-comm-tool` 为 PC 端与之 UART/AA 协议通信的上位机。
+
+### 文档入口
+
+| 读者 | 文档 |
+|------|------|
+| **操作人员** | [docs/软件使用手册.md](docs/软件使用手册.md) — 四标签页/串口/批量/三份 Excel/监测/`run_lite.bat` |
+| **入门故事（师傅带徒弟）** | [docs/师傅带徒弟_代码故事.md](docs/师傅带徒弟_代码故事.md) — 每个模块对应什么需求、什么技术，通俗漫画风 |
+| **学架构 / SE** | [docs/软件工程视角与VibeCoding重建实验.md](docs/软件工程视角与VibeCoding重建实验.md) — 分层、重发、result→ok→ber 流程图、课程切片 |
+| **协议 / 公式 / 二次开发** | [PROTOCOL_UART.md](docs/PROTOCOL_UART.md) · [SIM_TO_REAL.md](docs/SIM_TO_REAL.md) · [CODE_GUIDE.md](docs/CODE_GUIDE.md) |
+| **从零搭建清单** | [docs/EVB通信工具_代码需求书.md](docs/EVB通信工具_代码需求书.md)（精简规格索引；细节以上述文档与现码为准） |
+
+**硬件 / PCB（与上位机软件解耦）**： [PCB大阵列拼接评估需求说明.md](docs/PCB大阵列拼接评估需求说明.md) · [44x76阵列物理评估.md](docs/44x76阵列物理评估.md) · [RRAM阵列_PCB_IO信号说明.md](docs/RRAM阵列_PCB_IO信号说明.md) · [嘉立创_原理图与PCB设计指导书.md](docs/嘉立创_原理图与PCB设计指导书.md) · [AD_原理图与PCB设计指导书.md](docs/AD_原理图与PCB设计指导书.md)
+
+**打包分发**见 [DISTRIBUTE.md](DISTRIBUTE.md)（zip 不含 `.venv`，对方解压后双击 `run.bat` 即可）。  
+**多机私密 GitHub 同步**（2026-07-17 审计）：见 [DISTRIBUTE.md §多机同步](DISTRIBUTE.md#多机同步github-私密仓库--2026-07-17)。
 
 ## 环境配置
 
@@ -29,16 +45,16 @@ python3 --version
 **首选 `run.bat`** — 不依赖 PowerShell 执行策略，在 **cmd 和 PowerShell 中均可直接运行：
 
 ```cmd
-cd %USERPROFILE%\Desktop\evb-comm-tool
+cd <项目目录>
 run.bat
 ```
 
-首次运行若缺少 `.venv`，`run.bat` 会自动调用 `setup.bat` 完成环境配置。
+首次运行若缺少 `.venv`，`run.bat` 会自动调用 `setup.bat` 完成环境配置（优先 `py -3`，其次 `py` / `python` / `python3`）。
 
 **首次仅配置环境（可选）：**
 
 ```cmd
-cd %USERPROFILE%\Desktop\evb-comm-tool
+cd <项目目录>
 setup.bat
 ```
 
@@ -55,10 +71,10 @@ powershell -ExecutionPolicy Bypass -File .\run.ps1
 ### 方式二：手动配置
 
 ```powershell
-cd %USERPROFILE%\Desktop\evb-comm-tool
+cd <项目目录>
 
 # 1. 创建虚拟环境
-py -m venv .venv
+py -3 -m venv .venv
 
 # 2. 升级 pip
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
@@ -75,14 +91,14 @@ py -m venv .venv
 **推荐（Windows）：**
 
 ```cmd
-cd %USERPROFILE%\Desktop\evb-comm-tool
+cd <项目目录>
 run.bat
 ```
 
 **直接命令（不依赖任何脚本）：**
 
 ```cmd
-cd %USERPROFILE%\Desktop\evb-comm-tool
+cd <项目目录>
 .\.venv\Scripts\python.exe main.py
 ```
 
@@ -93,9 +109,10 @@ cd %USERPROFILE%\Desktop\evb-comm-tool
 | 包 | 版本 |
 |----|------|
 | PyQt6 | 6.7.1 |
-| pyqtgraph | 0.13.7 |
+| matplotlib | >= 3.8.0 |
 | pyserial | 3.5 |
 | numpy | >= 2.2.0 |
+| pandas / openpyxl | 可选，Excel 报告导出 |
 
 ### 常见问题
 
@@ -112,15 +129,15 @@ cd %USERPROFILE%\Desktop\evb-comm-tool
 |------|----------|
 | 下拉框显示「未检测到 COM 口」 | 1. 确认 USB 线已插好<br>2. 打开 **设备管理器 → 端口 (COM 和 LPT)** 查看是否出现 COM 口<br>3. 若无 COM 口，安装对应 USB 转串口驱动（**CH340** / **CP2102** / **FTDI**）<br>4. 点击工具栏 **「刷新端口」**（未连接时每 1.5 秒也会自动刷新） |
 | 有 COM 口但连接失败 | 1. 关闭占用串口的其他程序（Arduino IDE、串口助手、PuTTY 等）<br>2. 重新拔插 USB<br>3. 在设备管理器中确认 COM 口号，在下拉框选择 **COM3 - 描述** 这类带描述的项 |
-| 已连接但发送无回复 | 1. 确认波特率 **115200**、校验 **无(N)**、停止位 **1**（默认 8N1）<br>2. 确认 TX/RX 接线正确<br>3. 查看接收面板日志是否有 `[错误] 接收超时` |
+| 已连接但发送无回复 | 1. 确认波特率 **9600**、8N1（界面固定显示）<br>2. 确认 TX/RX 接线正确<br>3. 查看日志是否有 `接收超时` 或 `未收敛` |
 | 状态栏一直显示「未连接」 | 必须手动选择 COM 口后点击 **「连接」**；插入 USB 不会自动连接 |
 
 **连接步骤（必做）：**
 
 1. 插入 USB 串口，等待下拉框出现 COM 口（如 `COM3 - USB-SERIAL CH340`）
 2. 选择正确的 COM 口
-3. 点击 **「连接」** — 状态栏应变为绿色 **「已连接 COMx @ 115200 bps」**
-4. 点击 **「发送单帧」** 测试通信
+3. 点击 **「连接」** — 串口配置区应显示绿色 **「● 已连接」**
+4. 点击 **「▶ 运行当前」** 测试通信（可先编辑发送区 12 通道 DAC 值）
 
 **命令行检查 COM 口（可选）：**
 
@@ -131,11 +148,11 @@ cd %USERPROFILE%\Desktop\evb-comm-tool
 ## 快速开始
 
 ```cmd
-cd %USERPROFILE%\Desktop\evb-comm-tool
+cd <项目目录>
 run.bat
 ```
 
-若 `.venv` 尚未创建，先运行 `setup.bat`，再运行 `run.bat`。
+若 `.venv` 尚未创建，`run.bat` 会自动运行 `setup.bat`；也可手动先执行 `setup.bat`。
 
 
 ## 协议说明
@@ -163,7 +180,7 @@ AA 0D AC 0D AC 07 72 06 B6 09 C4 05 DC 0D AC 0C 54 09 C4 09 C4 09 C4 0F A0
 | 0 | 迭代计数 |
 | 1-16 | 8 路输出，每路 2 字节大端序 12-bit 原始值 |
 
-输出电压换算: `(raw / 4096) × 5.0 × (-1.25) V`
+输出列电流换算: `I_col = ((raw / 4096) × 5 − 2.5) × (−1)`（XXX=12-bit ADC raw；见 docs/SIM_TO_REAL.md）
 
 **示例 RX:**
 ```
@@ -172,20 +189,20 @@ AA 0D AC 0D AC 07 72 06 B6 09 C4 05 DC 0D AC 0C 54 09 C4 09 C4 09 C4 0F A0
 
 ### 错误重传
 
-- 若任一路输出原始值 `< 0x1FF` (511)，自动重发当前帧
-- 最大重试次数可配置（默认 3 次）
+- 若回传 **CH1–8 任一路** 原始值 `< 0x2FF` (767)，自动重发当前帧
+- 最大重试次数可配置（默认 5 次重发）
 - 接收超时可配置（默认 500 ms）
 
-## 串口默认参数
+## 串口默认参数（8N1）
 
 | 参数 | 默认值 |
 |------|--------|
-| 波特率 | 115200 |
+| 波特率 | 9600 |
 | 数据位 | 8 |
 | 校验位 | 无 (N) |
 | 停止位 | 1 |
 
-所有参数均可在界面工具栏修改。
+波特率、超时与重试次数可在界面修改；数据位/校验/停止位固定为 **8N1**。
 
 ## CSV 测试文件格式
 
@@ -200,83 +217,72 @@ group_id,cmd,ch1,ch2,ch3,ch4,ch5,ch6,ch7,ch8,ch9,ch10,ch11,ch12,exp_sign1,exp_si
 | `ch1` ~ `ch12` | 12 通道原始值，范围 0-4095 |
 | `exp_sign1` ~ `exp_sign8` | 可选，期望输出符号: `+1`、`-1` 或 `0` |
 
-### 期望符号 (BER) 逻辑
+### 期望符号与比特误码率 (BER)
 
-- **符号 BER**: 仅比较测量电压与期望值的**正负号**，符号一致即判定正确
-- 若 CSV 含 `exp_sign` 列，直接使用
-- 若无 `exp_sign` 列，按优先级使用:
-  1. 界面「默认期望符号」配置（逗号分隔，如 `+1,-1,+1,-1,+1,-1,+1,-1`）
-  2. 从输入通道 ch1-ch8 推断（raw > 2048 → +1，raw < 2048 → -1，= 2048 → 0）
+- **比特 BER**：对 RX 12-bit ADC 做硬判决（`raw > 2048 → 0`，否则 `1`），与 CSV `exp_sign` 反推的 ground truth 比特比较
+- 期望比特：`u = (1 - exp_sign) / 2`（BPSK：`+1→0`，`-1→1`）
+- 若 CSV 含 `exp_sign` 列，直接使用；`exp_sign=0` 的通道不参与 BER 分母
+- 若无 `exp_sign` 列，按优先级使用界面「默认期望符号」或从 ch1–ch8 输入 raw 推断（精度较低）
 
 ### 示例文件
 
-- `data/sample_test.csv` — 10 组示例（含用户协议样例）
-- `data/sample_test_1000.csv` — 运行生成脚本获得 1000 组演示数据:
+- `data/测试集/` — 源测试 CSV（加载用）
+- `data/测后数据集/YYYY-MM-DD/` — 按日期存放的测后 CSV + 三份 Excel
 
-```powershell
-.\.venv\Scripts\python.exe data/generate_sample.py
-```
-## 界面布局
+测试向量格式见 [docs/SIM_TO_REAL.md](docs/SIM_TO_REAL.md)。
+
+界面按 `DAC测试GUI_编程规范.md` 实现，采用 **双标签页** 布局：
+
+- **测试执行** — 串口配置、用例列表、12 通道发送 / 8 通道接收、控制按钮、日志
+- **可视化分析** — BER-SNR 曲线、平均迭代次数-SNR 曲线、电压解码表（口径见 [docs/SIM_TO_REAL.md](docs/SIM_TO_REAL.md)）
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│  工具栏: COM端口 | 波特率 | 校验 | 停止位 | 超时 | 重试 | 连接   │
-├──────────────────────────────┬──────────────────────────────────┤
-│ ① 发送面板                  │ ③ SNR / 质量                      │
-│  - 12 通道输入表            │  - 实时 SNR 曲线                  │
-│  - TX 帧 HEX 预览           │  - 通道质量柱状图                  │
-│  - 加载 CSV / 发送单帧      │  - 重试次数、成功率                │
-├──────────────────────────────┼──────────────────────────────────┤
-│ ② 接收面板                  │ ④ BER / 统计                      │
-│  - 带时间戳 HEX 日志        │  - 符号 BER / 帧错误率             │
-│  - 8 路输出解析 + 电压      │  - 低值重试统计                    │
-│  - 迭代计数高亮             │  - 导出 CSV 报告                   │
-└──────────────────────────────┴──────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│  [串口配置] 端口 | 波特率 | 连接/断开/刷新 | 状态                │
+├────────────┬───────────────────────┬──────────────────────────────┤
+│ 单帧测试区 │  发送 (12通道)         │  接收 (8通道)                 │
+│ 批量测试区 │  ΔV / DAC / hex       │  ΔV / DAC / 正负对 / hex     │
+│ (CSV 后显) │                       │                              │
+├────────────┴───────────────────────┴──────────────────────────────┤
+│  hex 收发 | 协议解析 | 日志                                        │
+│  批量区: [▶▶ 运行全部] [■ 停止] [📊 导出报告]                       │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 ## 批量测试流程
 
-1. 连接串口
-2. 加载 CSV 测试文件
-3. 点击「开始测试」
-4. 每组: 构建 TX 帧 → 发送 → 等待 RX (17 字节) → 校验/重试 → 更新统计
-5. 完成后可导出报告至 `reports/` 目录
+测试向量格式见 [docs/SIM_TO_REAL.md](docs/SIM_TO_REAL.md)。默认数据集在 `data/测试集/`（如 `mode1.csv`）。
+
+1. （可选）单帧 A1 黄金抓包联调确认收发正常
+2. 连接串口
+3. 点击 **「加载 CSV」** → 选择 `data/测试集/` 下的源文件
+4. 点击 **「▶▶ 运行全部」**（批量期间 UI 节流，结束后刷新图表）
+5. 每组: 构建 TX 帧 → 发送 → 等待 RX (17 字节) → CH1–8 raw≥0x2FF 收敛重试（最多 5 次重发）→ 符号比对；每次尝试写入 CSV `Attempt` 列（1, 2, …）；**BER 仅统计最终收敛帧**（raw < 0x2FF 不计入）。
+6. 批量结束后导出测后 CSV 到 `data/测后数据集/YYYY-MM-DD/`，并**固定生成三份 Excel**（后台写入，日志提示写完）：
+   - ① `{stem}_result_{时间}.xlsx`：完整记录（含通信错误帧与全部 Attempt）
+   - ② `{stem}_result_{时间}_ok.xlsx`：最终失败 → 仿真行+Attempt1..N **整套删除**；最终成功 → 只留收敛 Attempt（无 Out≈2.5）
+   - ③ `{stem}_result_{时间}_ber.xlsx`：在②上只留 CodeBit≠仿真 的行，误码通道 CodeBit+Out 粉红高亮
+7. **仿真 CodeBit 自动监测**：加载时快照；测后导出比对。详见 [docs/软件使用手册.md](docs/软件使用手册.md)。
+8. 切换到 **「可视化分析」** 查看 BER-SNR / 迭代次数曲线
+9. 点击 **「📊 导出报告」** 导出 Excel 或 CSV（含 Attempt 列与行背景色）
 
 ## 项目结构
 
 ```
 evb-comm-tool/
-├── main.py                 # 入口
-├── requirements.txt
-├── setup.ps1 / setup.bat   # 一键环境配置
-├── run.ps1 / run.bat       # 一键启动
-├── csv_loader.py           # CSV 加载├── protocol/
-│   ├── codec.py            # 帧编解码
-│   └── validator.py        # 重传校验
-├── comm/
-│   └── serial_worker.py    # 串口 QThread 工作线程
-├── analysis/
-│   ├── ber.py              # 符号 BER
-│   └── snr.py              # SNR / 稳定性
-├── ui/
-│   └── main_window.py      # 主界面
+├── main.py
+├── csv_loader.py
+├── protocol/               # 编解码、0x2FF
+├── comm/serial_worker.py   # 串口 QThread、多 Attempt
+├── analysis/               # 比对、聚合、三份 Excel、CodeBit 监测
+├── ui/                     # 主界面、图表、perf_settings
 ├── data/
-│   ├── sample_test.csv
-│   └── generate_sample.py
-└── reports/
+│   ├── 测试集/             # 源测试 CSV
+│   └── 测后数据集/YYYY-MM-DD/  # 按日期存放测后结果
+├── docs/                   # 使用手册 / SE 视角 / PROTOCOL / SIM_TO_REAL / CODE_GUIDE
+└── scripts/                # 冒烟与验收脚本
 ```
 
 ## 日志格式
 
-```
-[HH:MM:SS.mmm]发送→AA 0D AC 0D ...
-[HH:MM:SS.mmm]接收←02 09 30 0B ...
-```
-
-## 假设与说明
-
-1. **串口参数**: 默认 115200 8N1，可在 UI 完全配置
-2. **符号 BER**: 不要求电压精确值，仅判正负（死区 ±0.05V 内视为 0）
-3. **SNR**: 有参考值时计算 SNR(dB)；无参考值时显示信号稳定性（均值/标准差）
-4. **Windows COM**: 通过 `pyserial` 自动枚举 COM 端口，点击「刷新」更新列表
-5. **无硬件测试**: 未连接 EVB 时仍可编辑通道、预览 TX 帧、加载 CSV
+单帧测试输出详细 TX/RX 解析；**批量测试仅输出起止摘要**（避免 7000 帧刷屏阻塞 UI）。

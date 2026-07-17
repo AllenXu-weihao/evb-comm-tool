@@ -11,8 +11,22 @@ $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 
 $venvPython = Join-Path $PSScriptRoot ".venv\Scripts\python.exe"
+$mainPy = Join-Path $PSScriptRoot "main.py"
+$needSetup = $false
+
 if (-not (Test-Path $venvPython)) {
-    Write-Host "未找到虚拟环境，正在运行 setup.bat ..."
+    $needSetup = $true
+} else {
+    try {
+        & $venvPython --version | Out-Null
+    } catch {
+        $needSetup = $true
+    }
+    if ($LASTEXITCODE -ne 0) { $needSetup = $true }
+}
+
+if ($needSetup) {
+    Write-Host "未找到可用虚拟环境，正在运行 setup.bat ..."
     & cmd /c "`"$PSScriptRoot\setup.bat`" nopause"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
@@ -24,4 +38,5 @@ if (-not (Test-Path $venvPython)) {
     exit 1
 }
 
-& $venvPython (Join-Path $PSScriptRoot "main.py")
+& $venvPython $mainPy
+exit $LASTEXITCODE

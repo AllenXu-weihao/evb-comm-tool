@@ -1,0 +1,4 @@
+EbNo_dB,FrameIdx,In[0],In[1],In[2],In[3],In[4],In[5],In[6],In[7],In[8],In[9],In[10],In[11],Out[0],Out[1],Out[2],Out[3],Out[4],Out[5],Out[6],Out[7],CodedBit[0],CodedBit[1],CodedBit[2],CodedBit[3],CodedBit[4],CodedBit[5],CodedBit[6],CodedBit[7],InfoBit[0],InfoBit[1],InfoBit[2],InfoBit[3],IterNum,RecvHex,MatchStatus,ErrorPositions
+6.0000,1,-1,-1.0000,-0.5312,1.0000,-1.0000,-1.0000,1.0000,1.0000,0.0000,0.0000,0.0000,1.5000,-0.7895,-0.7895,0.7895,0.7895,-0.4584,-0.4584,0.2039,0.4584,1,1,0,0,1,1,0,0,0,1,0,0,2,,SIMULATION: has mismatched measured row(s),
+6.0000,2,-0.5,-0.5,-0.265,0.5,-0.5,-0.5,0.5,0.5,0.0000,0.0000,0.0000,1.5000,-0.7895,-0.7895,0.7895,0.7895,-0.4584,-0.4584,0.2039,0.4584,1,1,0,0,1,1,0,0,0,1,0,0,2,,SIMULATION: has mismatched measured row(s),
+6.0000,3,-0.25,-0.25,-0.1325,0.25,-0.25,-0.25,0.25,0.25,0.0000,0.0000,0.0000,1.5000,-0.7895,-0.7895,0.7895,0.7895,-0.4584,-0.4584,0.2039,0.4584,1,1,0,0,1,1,0,0,0,1,0,0,2,,SIMULATION: has mismatched measured row(s),
